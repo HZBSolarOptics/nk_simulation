@@ -5,6 +5,5 @@ required python packages:
 
 numpy
 scipy
-matplotlib
 Pyqt5
 pyqtgraph
