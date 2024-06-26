@@ -551,7 +551,7 @@ class Settings(QtWidgets.QMainWindow, Ui_MainWindow_settings):
                 
                 params.append(TL_initial_eps)
                 # Verkettung der Oszillatorwerte basierend auf den Checkbox-Zuständen
-                label_D = ['A', '$\Gamma$']
+                label_D = ['A', '$\\Gamma$']
                
                 for i in range(5):
                       
@@ -3351,8 +3351,8 @@ class Result(QtWidgets.QMainWindow, Ui_MainWindow_results):
 
         
         self.RT.setLabel('left', 'R/T [%]', units='', color='black')
-        self.plot_delta.setLabel('left', '\Delta [deg]', units='', color='black')
-        self.plot_psi.setLabel('left', '\psi [deg]', units='', color='black')
+        self.plot_delta.setLabel('left', '\\Delta [deg]', units='', color='black')
+        self.plot_psi.setLabel('left', '\\psi [deg]', units='', color='black')
         self.nk.setLabel('left', 'n/k', units='', color='black')
 
         
