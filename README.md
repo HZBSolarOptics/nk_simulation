@@ -7,3 +7,6 @@ numpy
 scipy
 Pyqt5
 pyqtgraph
+
+You will find more detailes help in 
+/pdf for python/Helpbook.pdf
