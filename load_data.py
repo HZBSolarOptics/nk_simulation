@@ -8,7 +8,6 @@ import numpy as np
 import tkinter as tk
 from tkinter import filedialog
 from scipy.interpolate import interp1d
-from dispersion import Catalogue, Material, Spectrum
 
 def lambda_range():
     
@@ -26,7 +25,8 @@ def load_RT(minimal, maximal):
     root.withdraw()  # Verstecke das Hauptfenster, da wir es nicht verwenden
     
     # Dateiauswahl mit dem Dateiauswahldialog von Tkinter
-    file_path = filedialog.askopenfilename(title="Choose R/T-Measurement .csv file", filetypes=[("CSV-Dateien", "*.csv")])
+    file_path = filedialog.askopenfilename(title="Choose R/T-Measurement .csv file", 
+                                           filetypes=[("CSV-Dateien", "*.csv")])
     
     if not file_path:
         print("No file selected.")

@@ -6,10 +6,10 @@ Created on Wed Feb 28 13:57:25 2024
 """
 
 from scipy.interpolate import interp1d
-
 import numpy as np
+
 from tmm.tmm_core import inc_tmm, coh_tmm
-from dielectric_models import TL_multi, TL_drude
+from dielectric_models import TL_drude
 
 
 def N(lam_vac, params):
@@ -231,3 +231,5 @@ def SE_rough(lam_vac, theta, params, args):
     psi = np.arctan(np.abs(rp/rs))
     delta = -1 * np.angle(-rp/rs) + np.pi
     return psi, delta
+
+

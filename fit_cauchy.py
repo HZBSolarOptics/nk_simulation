@@ -5,7 +5,10 @@ Created on Wed Feb 28 13:57:25 2024
 @author: a4246
 """
 
+from scipy.optimize import least_squares
 from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
+
 
 import numpy as np
 
@@ -247,4 +250,50 @@ def SE_rough_C(lam_vac, theta, params, args):
     psi = np.arctan(np.abs(rp/rs))
     delta = -1 * np.angle(-rp/rs) + np.pi
     return psi, delta
+
+
+
+def model_tot_rough(lam_vac, theta, params, args):
+
+    if any(param < 0 for param in params):
+        R = 1e10
+        T = 1e10
+        psi = 1e10
+        delta = 1e10
+    else:    
+        (d_s_RT, theta_0_T, theta_0_R, c_list, subs) = args
+    
+        d_list_RT = [np.inf, params[-1], params[-2], d_s_RT, np.inf]
+    
+       
+        N_tmm = N(lam_vac, params[0:-3])
+        N_r = ema(lam_vac, (N_tmm, 1, params[-3], 1-params[-3]))
+    
+        index = np.where(subs[:, 0] == lam_vac)
+        N_glass = np.squeeze(subs[index, 1])
+    
+        n_RT_list = [1, N_r, N_tmm, N_glass, 1]
+    
+        R_s = inc_tmm('s', n_RT_list, d_list_RT, c_list,
+                      theta_0_R/180*np.pi, lam_vac)['R']
+        T_s = inc_tmm('s', n_RT_list, d_list_RT, c_list, 0, lam_vac)['T']
+        R_p = inc_tmm('p', n_RT_list, d_list_RT, c_list,
+                      theta_0_R/180*np.pi, lam_vac)['R']
+        T_p = inc_tmm('p', n_RT_list, d_list_RT, c_list, 0, lam_vac)['T']
+    
+        R = 0.5 * (R_s + R_p)
+        T = 0.5 * (T_s + T_p)
+    
+        n_ell_list = [1, N_r, N_tmm, N_glass, 1]
+        d_list_ell = [np.inf, params[-1], params[-2], d_s_RT, np.inf]
+    
+        # calculation of reflactance amplitude for coherent layers
+        rs = coh_tmm('s', n_ell_list, d_list_ell, theta/180*np.pi, lam_vac)['r']
+        # calculation of reflactance amplitude for coherent layers
+        rp = coh_tmm('p', n_ell_list, d_list_ell, theta/180*np.pi, lam_vac)['r']
+    
+        psi = np.arctan(np.abs(rp/rs))
+        delta = -1 * np.angle(-rp/rs) + np.pi
+        
+    return R, T, psi, delta
 

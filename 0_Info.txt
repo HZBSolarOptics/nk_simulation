@@ -1,0 +1,31 @@
+https://github.com/HZBSolarOptics/nk_simulation
+
+Main Programme: 
+	"GUI.py" -> run in python to start the GUI
+
+
+
+CSV for python: 
+	.csv files for example RT/SE measurement, 
+	Substrate nk-data file
+pdf for python: 
+	handbook
+Pictures:
+	dielectric models
+pyqt5:
+	GUI code (open in "designer" to make optical changes)
+tmm: 
+	Transfer Matrix module 
+
+
+Calculation of RT/SE with diffrent dielectric Models:
+	fit_cauchy, fit_sellmeier, fit_TL, fit_TLD 
+dielectric model functions:
+	"dielectric_models.py"
+
+upload function:
+	"load_data.py"
+Calculation of RT/SE:
+	"Calculation.py"
+
+

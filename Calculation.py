@@ -1,0 +1,173 @@
+from scipy.interpolate import interp1d
+
+import numpy as np
+from tmm.tmm_core import coh_tmm, inc_tmm
+
+from dielectric_models import TL_multi, TL_drude, cauchy, sellmeier
+
+
+def N(lam_vac, params, Model):
+    """
+    Calculation of the complexe refractive index for 
+    
+    For the substrate ns and nk are eather calculated with Cauchy or 
+    are known values which are selected in a .csv file.
+    To have a function out of the values n and k are interpolated.
+    
+    For the thin layer n_TL and k_TL are calculated with Tauc-Lorentz.
+    """
+    
+    if Model == 'Tauc Lorentz + Drude':
+        _, _, n, k = TL_drude(lam_vac, params)
+    if Model == 'Tauc Lorentz' :
+        _, _, n, k = TL_multi(lam_vac, params)
+    if Model == 'Cauchy' :
+        _, _, n, k = cauchy(lam_vac, params)
+
+    if Model == 'Sellmeier' :
+        _, _, n, k = sellmeier(lam_vac, params)
+
+    N_tmm = n + 1j * k
+    
+    return N_tmm
+
+def ema(lam_vac, input_ema):
+    N_1, N_2, f1, f2 = input_ema
+    
+    
+    n_1 = np.real(N_1)
+    k_1 = np.imag(N_1)
+    
+    e1_1 = n_1**2 - k_1**2
+    e2_1 =2 * n_1 * k_1
+    
+    e_1 = e1_1 - 1j * e2_1
+    
+    n_2 = np.real(N_2)
+    k_2 = np.imag(N_2)
+    
+    e1_2 = n_2**2 - k_2**2
+    e2_2 =2 * n_2 * k_2
+    
+    e_2 = e1_2 - 1j * e2_2
+    
+    p = np.sqrt(e_1/e_2)
+    
+    b = 1/4 * ((3 * f2 - 1) * (1 / p -p) + p)
+    
+    z = b + np.sqrt(b**2 + 0.5)
+
+    e_ema = z * np.sqrt(e_1*e_2)
+
+    e1_ema = np.real(e_ema)
+    e2_ema = np.imag(e_ema)
+    
+    n_ema = np.sqrt((e1_ema + (e1_ema**2 + e2_ema**2)**(0.5)) / 2)
+    
+    k_ema = np.sqrt((-e1_ema + (e1_ema**2 + e2_ema**2)**(0.5)) / 2) 
+    
+    N_ema = n_ema + 1j * k_ema
+    return N_ema
+
+def model(lam_vac, params, args):
+    Model = args['Model']
+    n_osz = args['n']
+    subs = args['subs_RT']
+
+    d_s_RT = args['d_s_RT']
+    c_list = args['c_list']
+    theta_0_R = args['theta_0_R']
+    theta_0_T = args['theta_0_T']
+    EMA = args['EMA']
+    params_x = np.zeros(len(params)+1)
+    params_x[0] = n_osz
+    params_x[1:] = params
+    
+    n_s = interp1d(subs[0], subs[1].real, kind='linear')(lam_vac) 
+    k_s = interp1d(subs[0], subs[1].imag, kind='linear')(lam_vac) 
+    
+    N_s = n_s + 1j * k_s
+    if EMA == 'true':
+        N_tmm = N(lam_vac, params_x[0:-3], Model)
+
+        d_list = [np.inf, params[-2], params[-3], d_s_RT, np.inf]
+        N_ema = ema(lam_vac, (N_tmm, 1, params[-1], 1-params[-1]))
+        n_list = [1, N_ema, N_tmm, N_s, 1]
+        
+    elif EMA == 'false':
+      
+        N_tmm = N(lam_vac, params_x[0:-1], Model)
+        d_list = [np.inf, params[-1], d_s_RT, np.inf]
+        n_list = [1, N_tmm, N_s, 1]
+
+    R_s = inc_tmm('s', n_list, d_list, c_list,
+                  theta_0_R/180*np.pi, lam_vac)['R']
+
+    R_p = inc_tmm('p', n_list, d_list, c_list,
+                  theta_0_R/180*np.pi, lam_vac)['R']
+
+    R = (R_s + R_p)/2
+    
+    T_s = inc_tmm('s', n_list, d_list, c_list,
+                  theta_0_T/180*np.pi, lam_vac)['T']
+    
+    T_p = inc_tmm('p', n_list, d_list, c_list,
+                  theta_0_T/180*np.pi, lam_vac)['T']
+    T = (T_s + T_p)/2
+        
+    return  R, T, N_tmm.real, N_tmm.imag
+
+
+def model_2(lam_vac, params, args, theta):
+    
+    """
+    Main Model for calculation of psi and Delta for certain wavelength 
+    
+    Input variables
+    
+    lam_vac: wavelength (nm)
+    Eg, C, E0, A, eps_1_inf, d_f : Tauc-Lorents parameters and thin layer thickness
+    th_0: angle of incidence (rad)
+    
+    Output
+    
+    psi: according to ellipsometry measurement (rad)
+    Delta: accourding to ellipsometry measurement (rad)
+    """
+    n_osz = args['n']
+    EMA = args['EMA']
+
+    subs = args['subs_SE']
+    Model = args['Model']
+    n_s = interp1d(subs[0], subs[1].real, kind='linear')(lam_vac) 
+    k_s = interp1d(subs[0], subs[1].imag, kind='linear')(lam_vac) 
+    
+    N_s = n_s + 1j * k_s
+    
+    params_x= np.zeros(len(params)+1)
+    params_x[0] = n_osz
+    params_x[1:] = params
+    
+    if EMA == 'true':
+        N_tmm = N(lam_vac, params_x[0:-3], Model)
+
+        d_list = [np.inf, params[-2], params[-3], np.inf]
+        N_ema = ema(lam_vac, (N_tmm, 1, params[-1], 1-params[-1]))
+        n_list = [1, N_ema, N_tmm, N_s]
+        
+    elif EMA == 'false':
+      
+        N_tmm = N(lam_vac, params_x[0:-1], Model)
+        d_list = [np.inf, params[-1], np.inf]
+        n_list = [1, N_tmm, N_s]
+       
+    
+    rs = coh_tmm('s', n_list, d_list, theta/180*np.pi, lam_vac)['r'] # calculation of reflactance amplitude for coherent layers
+    rp = coh_tmm('p', n_list, d_list, theta/180*np.pi, lam_vac)['r'] # calculation of reflactance amplitude for coherent layers
+        
+    psi = np.arctan(np.abs(rp/rs))
+    delta = -1 * np.angle(-rp/rs) + np.pi
+    
+    return psi, delta, N_tmm.real, N_tmm.imag
+
+       

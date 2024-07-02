@@ -6,9 +6,7 @@ Created on Wed Feb 28 13:57:25 2024
 """
 
 from scipy.interpolate import interp1d
-
 import numpy as np
-
 
 
 from tmm.tmm_core import inc_tmm, coh_tmm
@@ -248,3 +246,4 @@ def SE_rough_SM(lam_vac, theta, params, args):
     psi = np.arctan(np.abs(rp/rs))
     delta = -1 * np.angle(-rp/rs) + np.pi
     return psi, delta
+ 

@@ -15,7 +15,7 @@ from scipy.optimize import least_squares
 from PyQt5 import uic, QtWidgets,  QtGui, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 
-from Berechnung_test import model, model_2
+from Calculation import model, model_2
 from fit_TLD import RT, RT_rough, SE, SE_rough
 from fit_TL import RT_TL, RT_rough_TL, SE_TL, SE_rough_TL
 from fit_cauchy import RT_C, RT_rough_C, SE_C, SE_rough_C
@@ -84,11 +84,20 @@ class Settings(QtWidgets.QMainWindow, Ui_MainWindow_settings):
         #Help
         self.help_RT.clicked.connect(self.HW_RT)
         self.help_SE.clicked.connect(self.HW_SE)
+        self.help_RT_tmm.clicked.connect(self.HW_RT_tmm)
+        self.help_SE_tmm.clicked.connect(self.HW_SE_tmm)
+
         self.help_subs_RT.clicked.connect(self.HW_subs)
         self.help_subs_SE.clicked.connect(self.HW_subs)
         self.help_angle.clicked.connect(self.HW_angle)
         self.help_model.clicked.connect(self.HW_model)
+        self.help_TL.clicked.connect(self.HW_TL)
+        self.help_cauchy.clicked.connect(self.HW_cauchy)
+        self.help_SM.clicked.connect(self.HW_SM)
         self.help_error.clicked.connect(self.HW_error)
+        self.help_tol.clicked.connect(self.HW_tol)
+        self.help_tresh.clicked.connect(self.HW_tresh)
+
         self.open_HB.clicked.connect(self.Helpbook)
         self.open_console.clicked.connect(self.reopen_console)
 
@@ -493,10 +502,10 @@ class Settings(QtWidgets.QMainWindow, Ui_MainWindow_settings):
         self.model_inputs['RT fit'] = checkbox_RT_fit_checked
         self.model_inputs['SE fit'] = checkbox_SE_fit_checked
 
-        self.model_inputs['ftol'] = self.f_tol
-        self.model_inputs['xtol'] = self.x_tol
-        self.model_inputs['gtol'] = self.g_tol
-
+        self.model_inputs['ftol'] = float(self.f_tol.text())
+        self.model_inputs['xtol'] = float(self.x_tol.text())
+        self.model_inputs['gtol'] = float(self.g_tol.text())
+        self.model_inputs['threshold'] = float(self.threshold.text())
         
         
         self.model_inputs['Model'] = DiE_model
@@ -716,6 +725,26 @@ class Settings(QtWidgets.QMainWindow, Ui_MainWindow_settings):
     '<i>wavelength [nm] ; ψ [rad] 50°; Δ [rad] 50°; ψ [rad] 60°; Δ [rad] 60°; ...</i><br><br> '
     'No headline. ";" as separator.')
         Help.exec()
+    def HW_RT_tmm(self):
+        Help = QtWidgets.QMessageBox()
+        Help.setWindowTitle('Help')
+        Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        
+        Help.setText('The reflection and transmission are calculated with an '
+                     'open source transfer-matrix package '
+                     'named "tmm" written by Steven Byrnes, http://sjbyrnes.com')
+
+        Help.exec()
+    def HW_SE_tmm(self):
+        Help = QtWidgets.QMessageBox()
+        Help.setWindowTitle('Help')
+        Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        
+        Help.setText('The ellipsometry angles are calculated with an '
+                     'open source transfer-matrix package '
+                     'named "tmm" written by Steven Byrnes, http://sjbyrnes.com')
+
+        Help.exec()
     def HW_subs(self):
        
         Help = QtWidgets.QMessageBox()
@@ -744,12 +773,31 @@ class Settings(QtWidgets.QMainWindow, Ui_MainWindow_settings):
         
         help_window.show()
         self.help_window = help_window
-    def HW_angle(self):
+    def HW_TL(self):
         Help = QtWidgets.QMessageBox()
         Help.setWindowTitle('Help')
         Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
         
-        Help.setText('The File has to be a .csv File with three columns:<br><br><i>wavelength ; T ; R</i><br><br>wavelength in nm, R and T as fractions. ";" as separator.')
+        Help.setText('The exampled values are the parameters of nc-SiOx.')
+
+        Help.exec()
+    def HW_cauchy(self):
+        Help = QtWidgets.QMessageBox()
+        Help.setWindowTitle('Help')
+        Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        
+        Help.setText('The exampled values are the parameters of nc-SiOx in the IR spectre.')
+
+        Help.exec()
+    def HW_SM(self):
+        Help = QtWidgets.QMessageBox()
+        Help.setWindowTitle('Help')
+        Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        
+        Help.setText('The exampled values are the parameters of borsicate glass.')
+
+        Help.exec()
+    def HW_angle(self):
         Help = QtWidgets.QMessageBox()
         Help.setWindowTitle('Help')
         Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
@@ -768,7 +816,25 @@ class Settings(QtWidgets.QMainWindow, Ui_MainWindow_settings):
         Help.setWindowTitle('Help')
         Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
         
-        Help.setText( 'according to leastsquare lm-optimization python module. ftol = Tolerance of changes in Error function'
+        Help.setText('Termination conditions. According to leastsquare lm-optimization python module.\n '
+                     'ftol = Tolerance of changes in Error function \n '
+                     'xtol = Tolerance of changes in parameter\n '
+                     'gtol = Tolerance of norm of the gradient\n')
+        Help.exec()
+        
+    def HW_tresh(self):
+        Help = QtWidgets.QMessageBox()
+        Help.setWindowTitle('Help')
+        Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        
+        Help.setText('The File has to be a .csv File with three columns:<br><br><i>wavelength ; T ; R</i><br><br>wavelength in nm, R and T as fractions. ";" as separator.')
+        Help = QtWidgets.QMessageBox()
+        Help.setWindowTitle('Help')
+        Help.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        
+        Help.setText( 'For numerical security. '
+                     'Neighbouring SE measurement points which are differing more than this threshold '
+                     'will not be taken into account in error calculation.'
     )
         Help.exec()
             
@@ -833,7 +899,6 @@ class Settings(QtWidgets.QMainWindow, Ui_MainWindow_settings):
                 
         if not self.error_found:
             print('Error found', self.error_found)
-            print('SE_data', self.SE_inputs)
             self.interpol_data()
             self.interpol_subs()
             self.safety_check()
@@ -888,18 +953,16 @@ class Settings(QtWidgets.QMainWindow, Ui_MainWindow_settings):
             if RT_calc or SE_calc:
                 if not RT_fit and not SE_fit:
                     self.print_result({})
-            else:
+            if not RT_fit and not SE_fit and not RT_calc and not SE_calc:
                 self.print_result({})
 
                  
     def print_result(self, result):
-        print(result)
         Calculator  = Calculation(self.model_inputs, self.RT_inputs, self.SE_inputs, result)
         Calculator.calculation()
         print('calculation succeeded')
 
         self.show_results = Result(self.model_inputs, self.SE_inputs, self.RT_inputs, Calculator.results)
-        print(self.model_inputs['RT fit'])
         self.show_results.show_results()
         
         RT_fit = self.model_inputs['RT fit']
@@ -939,15 +1002,11 @@ class Optimizer():
 
         self.results = {}
         self.count = 0 
-        #self.print_window = printout
         
     def running_status(self):
         print('optimizer stopped')
         self._is_running = False
         
-    def close_print(self):
-        if self.print_window is not None:
-            self.print_window.close()
     def TLD_SE_rough(self, params, *args):
        
         while self._is_running:
@@ -972,7 +1031,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1039,7 +1098,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1180,7 +1239,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1266,7 +1325,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1356,7 +1415,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1443,7 +1502,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1515,7 +1574,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1580,7 +1639,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1724,7 +1783,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1815,7 +1874,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1887,7 +1946,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -1956,7 +2015,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -2099,7 +2158,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -2193,7 +2252,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -2266,7 +2325,7 @@ class Optimizer():
                 Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
                 Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
                 
-                threshold = 1
+                threshold = self.model_inputs['threshold']
         
                 # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
                 indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -2334,7 +2393,7 @@ class Optimizer():
             Errors_psi = (psis_fl - psis_data) / np.sqrt(len(psis_data))
             Errors_delta = (deltas_fl - deltas_data)/ np.sqrt(len(deltas_data))
             
-            threshold = 1
+            threshold = self.model_inputs['threshold']
     
             # Finde die Indizes im psi_data-Array, an denen der Unterschied größer als der Schwellenwert ist
             indices = np.where(np.abs(np.diff(deltas_data)) > threshold)[0]
@@ -2437,13 +2496,17 @@ class Optimizer():
     
     def model(self, callback):
         print('simulation starts')
+
         checkbox_RT_fit_checked = self.model_inputs['RT fit']     
         checkbox_SE_fit_checked = self.model_inputs['SE fit']
         
         Model = self.model_inputs['Model']
         n_osz = self.model_inputs[Model]['n_osz']      
-        EMA = self.model_inputs[Model]['EMA']      
-        
+        EMA = self.model_inputs[Model]['EMA']    
+        ftol = self.model_inputs['ftol']
+        xtol = self.model_inputs['xtol']
+        gtol = self.model_inputs['gtol']
+
         lam_vac_RT = self.RT_inputs.get('lam_vac', None)
         R_data = self.RT_inputs.get('R', None)
         T_data = self.RT_inputs.get('T', None)
@@ -2509,55 +2572,62 @@ class Optimizer():
              subs_SE,
              alpha_R, alpha_T, alpha_psi, alpha_delta, callback)
              
-            
             if Model == 'Tauc Lorentz + Drude':
                 if EMA == 'true':
                     print('Fitting all with EMA TL + Drude')
                     opt_param = least_squares(self.TLD_all_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting all TL + Drude')
 
                     opt_param = least_squares(self.TLD_all,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm',
+                                              ftol = ftol, xtol = xtol, gtol =gtol)  
             if Model == 'Tauc Lorentz':
                 if EMA == 'true':
                     print('Fitting all with EMA TL')
                     opt_param = least_squares(self.TL_all_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting all TL')
 
                     opt_param = least_squares(self.TL_all,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
             if Model == 'Cauchy':
                 if EMA == 'true':
                     print('Fitting all with EMA Cauchy')
                     opt_param = least_squares(self.C_all_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting all Cauchy')
 
                     opt_param = least_squares(self.C_all,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
             if Model == 'Sellmeier':
                 if EMA == 'true':
                     print('Fitting all with EMA Sellmeier')
                     opt_param = least_squares(self.SM_all_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting all Sellmeier')
 
                     opt_param = least_squares(self.SM_all,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
             
         if checkbox_RT_fit_checked and not checkbox_SE_fit_checked:
             args = (n_osz, d_s_RT,
@@ -2571,25 +2641,29 @@ class Optimizer():
                     print('Fitting RT with EMA TL + Drude')
                     opt_param = least_squares(self.TLD_RT_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting RT TL + Drude')
 
                     opt_param = least_squares(self.TLD_RT,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
             if Model == 'Tauc Lorentz':
                 if EMA == 'true':
                     print('Fitting RT with EMA TL')
                     opt_param = least_squares(self.TL_RT_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting RT TL')                  
                    
                     opt_param = least_squares(self.TL_RT,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
                     
                     
                         
@@ -2598,25 +2672,29 @@ class Optimizer():
                     print('Fitting RT with EMA Cauchy')
                     opt_param = least_squares(self.C_RT_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting RT Cauchy')
 
                     opt_param = least_squares(self.C_RT,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
             if Model == 'Sellmeier':
                 if EMA == 'true':
                     print('Fitting RT with EMA Sellmeier')
                     opt_param = least_squares(self.SM_RT_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting RT Sellmeier')
 
                     opt_param = least_squares(self.SM_RT,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
         if checkbox_SE_fit_checked and not checkbox_RT_fit_checked:
             args = (n_osz, subs_SE,
                        theta_values, lam_vac_SE, np.array(psis_data).flatten(), 
@@ -2627,20 +2705,23 @@ class Optimizer():
                     print('Fitting SE with EMA TL + Drude')
                     opt_param = least_squares(self.TLD_SE_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting SE TL + Drude')
 
                     opt_param = least_squares(self.TLD_SE,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
             if Model == 'Tauc Lorentz':
                 if EMA == 'true':
                     print('Fitting SE with EMA TL')
                     while self._is_running == 'True':
                         opt_param = least_squares(self.TL_SE_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                         if self._is_running == 'False':
                             break
                 elif EMA == 'false':
@@ -2648,31 +2729,36 @@ class Optimizer():
 
                     opt_param = least_squares(self.TL_SE,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
             if Model == 'Cauchy':
                 if EMA == 'true':
                     print('Fitting SE with EMA Cauchy')
                     opt_param = least_squares(self.C_SE_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting SE Cauchy')
 
                     opt_param = least_squares(self.C_SE,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
             if Model == 'Sellmeier':
                 if EMA == 'true':
                     print('Fitting SE with EMA Sellmeier')
                     opt_param = least_squares(self.SM_SE_rough,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm') 
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol) 
                 elif EMA == 'false':
                     print('Fitting SE Sellmeier')
 
                     opt_param = least_squares(self.SM_SE,
                                               initial_guess, args=args, 
-                                              verbose=2, method = 'lm')
+                                              verbose=2, method = 'lm'
+                                              , ftol = ftol, xtol = xtol, gtol =gtol)
 
         print('fitting complete')
         print(opt_param)
@@ -2918,7 +3004,6 @@ class Calculation():
             k_opt = []
             
             print('start RT/SE based nk-calculation')
-            print(lam_RT, lam_SE)
             R_tmm_opt, T_tmm_opt, n_opt, k_opt = np.transpose(np.array([self.calculation_RT(lam_vac) for lam_vac in lam_RT]))
             
             num_theta = len(theta_values)
@@ -2947,7 +3032,6 @@ class Calculation():
             
         elif checkbox_RT_checked or checkbox_RT_fit_checked:
             lam_examp = self.RT_inputs['lam_vac']
-            print(lam_examp)
 
             if len(lam_examp) == 0:
                 lam_examp = np.linspace(lam_min_plot, lam_max_plot, 100)
@@ -2961,7 +3045,6 @@ class Calculation():
 
             R, T, n_opt, k_opt= np.transpose(np.array([self.calculation_RT(lam_vac) 
                                                           for lam_vac in lam_examp]))
-            print(R,T)
             Error_RT = self.error_RT(lam_examp, R, T, alpha_R, alpha_T)
             self.results['R'] = R
             self.results['T'] = T
@@ -3074,14 +3157,12 @@ class Result(QtWidgets.QMainWindow, Ui_MainWindow_results):
         elif RT_calc or SE_calc:
             labels = self.model_inputs[Model]['labels']
             params = self.model_inputs[Model]['params']
-            print('labels',labels)
-            print('params', params)
+
             combined_data = {label: param for label, param in zip(labels, params)}
         else:
             labels = self.model_inputs[Model]['labels']
             params = self.model_inputs[Model]['params']
-            print('labels',labels)
-            print('params', params)
+          
             combined_data = {label: param for label, param in zip(labels, params)}
         for param, value in combined_data.items():
             row_position = self.result_table.rowCount()
@@ -3117,7 +3198,10 @@ class Result(QtWidgets.QMainWindow, Ui_MainWindow_results):
 
         self.nk.setLabel('left', 'n/k', units='', color='black')
 
-        self.nk.addLegend()
+        # self.nk.addLegend()
+        legend = self.nk.addLegend()
+        legend.setVisible(True)
+        legend.anchor((0, 1), (0, 1)) 
 
     def plot_RT(self):
         
@@ -3417,7 +3501,7 @@ class Result(QtWidgets.QMainWindow, Ui_MainWindow_results):
                 # Daten schreiben
                 writer.writerows(export_data)
     
-            print("Daten wurden erfolgreich exportiert.")
+            print("Data export succesfull.")
         
 class EmittingStream(QtCore.QObject):
     textWritten = QtCore.pyqtSignal(str)

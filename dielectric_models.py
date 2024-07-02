@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import math
 def TL_drude(lam_vac, params):
     
     n_osz = int(params[0])
@@ -175,7 +173,7 @@ def cauchy(lam_vac, params):
         epsilon_2 = 0
     return epsilon_1, epsilon_2, n, k
 
-def sellmeier(lam_vac, *params):
+def sellmeier(E, *params):
     if any(param < 0 for param in params):
         epsilon_1 = 10e10
         epsilon_2 = 10e10
@@ -190,7 +188,7 @@ def sellmeier(lam_vac, *params):
             start = 2*i + 2
             end = start + 1
             
-            SM = params[start] * lam_vac**2 / (lam_vac**2 - params[end]**2)
+            SM = params[start] * E**2 / (E**2 - params[end]**2)
             
             e_SM += SM
             
